@@ -1,0 +1,7 @@
+{
+  "name": "DeeNU.Ai - Next Level Generative AI",
+  "description": "A sophisticated AI chat assistant with multiple modes including grounded search, creative generation, and code generation. Features user authentication, chat history, voice input, and text-to-speech output.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

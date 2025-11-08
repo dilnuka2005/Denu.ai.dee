@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeeNU.Ai - Next Level Generative AI</title>
+    <link rel="icon" href="https://dilnuka13.github.io/AL/favicon.ico" type="image/x-icon">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Marked.js for Markdown parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        :root {
+            --color-primary: #10b981;
+            --color-primary-darker: #059669;
+            --color-text-light: #f3f4f6;
+            --color-text-dark: #1f2937;
+            --color-bg-dark: #111827;
+            --color-card-dark: #1f2937;
+            --color-bg-light: #f9fafb;
+            --color-card-light: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+            overflow: hidden; 
+        }
+
+        .dark-mode { background: var(--color-bg-dark); color: var(--color-text-light); }
+        .light-mode { background: var(--color-bg-light); color: var(--color-text-dark); }
+
+        #chat-container {
+            height: 100vh; 
+            width: 100vw; 
+            border-radius: 0; 
+            display: flex;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            opacity: 0; 
+        }
+        @media (min-width: 768px) {
+            #chat-container {
+                height: 95vh;
+                width: 95vw;
+                max-width: 1200px;
+                border-radius: 1.5rem;
+            }
+        }
+
+        #sidebar {
+            position: fixed;
+            inset-y: 0;
+            left: 0;
+            width: 300px;
+            z-index: 40;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #sidebar.sidebar-open {
+            transform: translateX(0);
+        }
+        @media (min-width: 768px) {
+            #sidebar {
+                position: relative;
+                transform: translateX(0);
+                flex-shrink: 0;
+            }
+        }
+        .light-mode #sidebar {
+             border-right-color: #e5e7eb;
+        }
+
+        .modal-content {
+            width: 90vw;
+        }
+        @media (min-width: 768px) { 
+            .modal-content {
+                width: 100%; 
+            }
+        }
+
+        #chat-history {
+            scroll-behavior: smooth;
+        }
+       
+        .user-bubble {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .model-bubble {
+            background-color: var(--color-card-dark);
+            color: inherit;
+            padding: 0.75rem 1rem;
+            border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .light-mode .model-bubble {
+            background-color: var(--color-card-light);
+            border: 1px solid #e5e7eb;
+            color: var(--color-text-dark);
+        }
+        .tts-button {
+            margin-left: 0.75rem;
+            padding: 0.4rem;
+            border-radius: 9999px;
+            color: white;
+            background-color: var(--color-primary-darker);
+            transition: background-color 0.15s;
+        }
+
+        #chat-history::-webkit-scrollbar { width: 8px; }
+        .dark-mode #chat-history::-webkit-scrollbar-thumb { background-color: #4b5563; }
+        .dark-mode #chat-history::-webkit-scrollbar-track { background: var(--color-bg-dark); }
+        .light-mode #chat-history::-webkit-scrollbar-thumb { background-color: #d1d5db; }
+        .light-mode #chat-history::-webkit-scrollbar-track { background: var(--color-bg-light); }
+
+        .modal {
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 50;
+        }
+        .modal-content {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        select {
+           -webkit-appearance: none; -moz-appearance: none; appearance: none;
+           background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20fill%3D%22%239CA3AF%22%3E%3Cpath%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20%2F%3E%3C%2Fsvg%3E');
+           background-repeat: no-repeat;
+           background-position: right 0.5rem center;
+           background-size: 1.5em;
+           padding-right: 2.5rem;
+        }
+        .dark-mode select {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20fill%3D%22%239CA3AF%22%3E%3Cpath%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20%2F%3E%3C%2Fsvg%3E');
+        }
+        select option { background-color: var(--color-bg-dark); color: var(--color-text-light); }
+        .light-mode select option { background-color: var(--color-bg-light); color: var(--color-text-dark); }
+        
+        .glass-effect {
+            background-color: var(--color-card-dark);
+            @supports (backdrop-filter: blur(16px)) {
+                background-color: rgba(31, 41, 55, 0.7); 
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+            }
+        }
+        .light-mode .glass-effect {
+            background-color: var(--color-card-light);
+            @supports (backdrop-filter: blur(16px)) {
+                 background-color: rgba(255, 255, 255, 0.7);
+                 backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+            }
+        }
+        .dark-mode #sidebar.glass-effect { border-right-color: rgba(55, 65, 81, 0.5); }
+        .light-mode #sidebar.glass-effect { border-right-color: rgba(229, 231, 235, 0.5); }
+
+        @keyframes loadIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes slideInFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseOpacity {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .animate-load-in {
+            opacity: 1 !important; 
+            animation: loadIn 0.6s ease-out forwards;
+        }
+        .animate-fade-in-scale {
+            animation: fadeInScale 0.3s ease-out forwards;
+        }
+        .message-bubble-animate {
+            animation: slideInFade 0.4s ease-out forwards;
+        }
+        .animate-pulse-opacity {
+            animation: pulseOpacity 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.80.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+</body>
+</html>
